@@ -2,7 +2,9 @@ import logging
 import aiohttp
 import async_timeout
 from datetime import timedelta
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 import voluptuous as vol
 from homeassistant.const import CONF_NAME
 from homeassistant.helpers import config_validation as cv
@@ -12,128 +14,66 @@ _LOGGER.info("ADA P1 Meter integráció indul")
 
 DOMAIN = "ada12"
 
-async def async_setup_entry(hass, config_entry):
+async def async_setup(hass: HomeAssistant, config: dict):
+    """Set up the ADA12 component."""
+    hass.data.setdefault(DOMAIN, {})
+    return True
+
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Set up Ada12 from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Használjuk az options-t, ha létezik, különben data-t
+    # Config adatok
     config_data = {**config_entry.data, **config_entry.options}
     host = config_data.get("host", "okosvillanyora.local")
     port = config_data.get("port", 8989)
 
     _LOGGER.info(f"ADA12 configured with host {host} and port {port}")
 
-    async def fetch_data():
-        """Fetch JSON data from the okosvillanyora.local server."""
-        url = f"http://{host}:{port}/json"
+    # Coordinator létrehozása
+    coordinator = Ada12DataUpdateCoordinator(hass, host, port)
+    await coordinator.async_config_entry_first_refresh()
+    
+    # Platform betöltése
+    hass.data[DOMAIN][config_entry.entry_id] = coordinator
+    
+    # Sensor platform betöltése
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(config_entry, "sensor")
+    )
+    
+    return True
+
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Unload a config entry."""
+    await hass.config_entries.async_forward_entry_unload(config_entry, "sensor")
+    hass.data[DOMAIN].pop(config_entry.entry_id)
+    return True
+
+class Ada12DataUpdateCoordinator(DataUpdateCoordinator):
+    """Class to manage fetching ADA12 data."""
+    
+    def __init__(self, hass, host, port):
+        """Initialize."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name="ADA12",
+            update_interval=timedelta(seconds=60)
+        )
+        self.host = host
+        self.port = port
+        self.data = {}
+
+    async def _async_update_data(self):
+        """Fetch data from ADA12."""
+        url = f"http://{self.host}:{self.port}/json"
         try:
             async with aiohttp.ClientSession() as session:
                 async with async_timeout.timeout(10):
                     async with session.get(url) as response:
-                        return await response.json()
+                        self.data = await response.json()
+                        return self.data
         except Exception as e:
             _LOGGER.error(f"Error fetching data: {e}")
-            return None
-
-    async def update_data(now):
-        """Periodically update the data."""
-        data = await fetch_data()
-        if data:
-            # Define all sensors with their state and attributes
-            sensors = {
-                "sensor.ada12_active_import_energy_total": {
-                    "state": data.get("active_import_energy_total", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Összes importált energia"}
-                },
-                "sensor.ada12_active_import_energy_tariff_1": {
-                    "state": data.get("active_import_energy_tariff_1", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Importált energia tarifa 1"}
-                },
-                "sensor.ada12_active_import_energy_tariff_2": {
-                    "state": data.get("active_import_energy_tariff_2", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Importált energia tarifa 2"}
-                },
-                "sensor.ada12_active_import_energy_tariff_3": {
-                    "state": data.get("active_import_energy_tariff_3", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Importált energia tarifa 3"}
-                },
-                "sensor.ada12_active_import_energy_tariff_4": {
-                    "state": data.get("active_import_energy_tariff_4", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Importált energia tarifa 4"}
-                },
-                "sensor.ada12_active_export_energy_total": {
-                    "state": data.get("active_export_energy_total", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Összes exportált energia"}
-                },
-                "sensor.ada12_active_export_energy_tariff_1": {
-                    "state": data.get("active_export_energy_tariff_1", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Exportált energia tarifa 1"}
-                },
-                "sensor.ada12_active_export_energy_tariff_2": {
-                    "state": data.get("active_export_energy_tariff_2", 0),
-                    "attributes": {"unit_of_measurement": "kWh", "friendly_name": "Exportált energia tarifa 2"}
-                },
-                "sensor.ada12_reactive_import_energy": {
-                    "state": data.get("reactive_import_energy", 0),
-                    "attributes": {"unit_of_measurement": "kVArh", "friendly_name": "Reaktív importált energia"}
-                },
-                "sensor.ada12_reactive_export_energy": {
-                    "state": data.get("reactive_export_energy", 0),
-                    "attributes": {"unit_of_measurement": "kVArh", "friendly_name": "Reaktív exportált energia"}
-                },
-                "sensor.ada12_voltage_phase_l1": {
-                    "state": data.get("voltage_phase_l1", 0),
-                    "attributes": {"unit_of_measurement": "V", "friendly_name": "Fázis 1 (L1) feszültség"}
-                },
-                "sensor.ada12_voltage_phase_l2": {
-                    "state": data.get("voltage_phase_l2", 0),
-                    "attributes": {"unit_of_measurement": "V", "friendly_name": "Fázis 2 (L2) feszültség"}
-                },
-                "sensor.ada12_voltage_phase_l3": {
-                    "state": data.get("voltage_phase_l3", 0),
-                    "attributes": {"unit_of_measurement": "V", "friendly_name": "Fázis 3 (L3) feszültség"}
-                },
-                "sensor.ada12_current_phase_l1": {
-                    "state": data.get("current_phase_l1", 0),
-                    "attributes": {"unit_of_measurement": "A", "friendly_name": "Fázis 1 (L1) áramerősség"}
-                },
-                "sensor.ada12_current_phase_l2": {
-                    "state": data.get("current_phase_l2", 0),
-                    "attributes": {"unit_of_measurement": "A", "friendly_name": "Fázis 2 (L2) áramerősség"}
-                },
-                "sensor.ada12_current_phase_l3": {
-                    "state": data.get("current_phase_l3", 0),
-                    "attributes": {"unit_of_measurement": "A", "friendly_name": "Fázis 3 (L3) áramerősség"}
-                },
-                "sensor.ada12_power_factor": {
-                    "state": data.get("power_factor", 0),
-                    "attributes": {"friendly_name": "Teljesítménytényező"}
-                },
-                "sensor.ada12_frequency": {
-                    "state": data.get("frequency", 0),
-                    "attributes": {"unit_of_measurement": "Hz", "friendly_name": "Frekvencia"}
-                },
-                "sensor.ada12_instantaneous_power_import": {
-                    "state": data.get("instantaneous_power_import", 0),
-                    "attributes": {"unit_of_measurement": "kW", "friendly_name": "Pillanatnyi importált teljesítmény"}
-                },
-                "sensor.ada12_instantaneous_power_export": {
-                    "state": data.get("instantaneous_power_export", 0),
-                    "attributes": {"unit_of_measurement": "kW", "friendly_name": "Pillanatnyi exportált teljesítmény"}
-                },
-                "sensor.ada12_meter_serial_number": {
-                    "state": data.get("meter_serial_number", ""),
-                    "attributes": {"friendly_name": "Mérő sorozatszáma"}
-                }
-            }
-
-            # Frissítsd az összes szenzor állapotát és attribútumait
-            for sensor_id, sensor_data in sensors.items():
-                hass.states.async_set(sensor_id, sensor_data["state"], sensor_data["attributes"])
-
-    # Az update_data hívása minden 60 másodpercben
-    async_track_time_interval(hass, update_data, timedelta(seconds=60))
-
-    # Első adatfrissítés
-    await update_data(None)
-    return True
+            raise UpdateFailed(f"Error communicating with API: {e}")
