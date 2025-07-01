@@ -3,6 +3,7 @@
   "name": "ADA P1 Meter",
   "codeowners": ["@greenhess"],
   "config_flow": true,
+  "integration_type": "device",
   "dependencies": [],
   "documentation": "https://github.com/greenhess/adap1meter",
   "iot_class": "local_polling",
@@ -15,5 +16,5 @@
       "modelName": "ADA12"
     }
   ],
-  "version": "1.2.9"
+  "version": "1.3.0-test"
 }
