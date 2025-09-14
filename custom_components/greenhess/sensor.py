@@ -64,6 +64,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 unique_id=unique_id,
                 prefix=prefix,
                 name=f"{prefix} {product_name} {sensor_config['friendly_name']}",
+                device_id=device_id,
             )
         )
 
@@ -81,6 +82,7 @@ class Ada12Sensor(CoordinatorEntity, Entity):
         self._unique_id = unique_id
         self._prefix = prefix
         self._name = name
+        self._device_id = device_id 
         self._attributes = {"icon": sensor_config["icon"]}
         self._attributes["uid"] = unique_id  #extra sor az attributes-ba
 
@@ -103,8 +105,8 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     @property
     def device_info(self):
         return {
-            "identifiers": {(self._device_id,)},  # MINDEN szenzornál ugyanaz!
-            "name": "ADA P1 Meter",
+            "identifiers": {(self._device_id,)},  
+            "name": self._name
             "manufacturer": "ADA",
             "model": self._product_type,
         }      
