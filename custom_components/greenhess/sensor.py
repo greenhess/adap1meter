@@ -107,7 +107,7 @@ class Ada12Sensor(CoordinatorEntity, Entity):
             "name": "ADA P1 Meter",
             "manufacturer": "ADA",
             "model": self._product_type,
-
+        }
             
     @property
     def state(self):
@@ -117,12 +117,3 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     @property
     def extra_state_attributes(self):
         return self._attributes
-    
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(self._unique_id,)},
-            "name": "ADA P1 Meter",
-            "manufacturer": "ADA",
-            "model": self._product_type,
-        }
