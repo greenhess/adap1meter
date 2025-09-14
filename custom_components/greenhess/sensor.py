@@ -22,6 +22,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     config_data = {**config_entry.data, **config_entry.options}
     prefix = config_data.get("prefix", "")
     product_type = config_data.get("product_type", "ada12")
+    device_id = f"ada_p1_meter_{url}_{product_type}" 
 
     # ------------------------
     # URL logika
