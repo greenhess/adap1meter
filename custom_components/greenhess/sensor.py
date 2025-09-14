@@ -106,7 +106,7 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     def device_info(self):
         return {
             "identifiers": {(self._device_id,)},  
-            "name": self._name
+            "name": self._name,
             "manufacturer": "ADA",
             "model": self._product_type,
         }      
