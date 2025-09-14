@@ -24,6 +24,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     url = config_entry.data.get("url", "default_url")
     product_type = config_entry.data.get("product_type", "default_type")
     device_id = f"ada_p1_meter_{url}_{product_type}"
+    device_name = f"{prefix} {product_type}" 
 
 
     # ------------------------
@@ -111,7 +112,7 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     def device_info(self):
         return {
             "identifiers": {(self._device_id,)},  
-            "name": "ADA P1",
+            "name": f"{self._prefix} {self._product_type}",
             "manufacturer": "ADA",
             "model": self._product_type,
         }      
