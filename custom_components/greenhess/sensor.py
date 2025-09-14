@@ -12,6 +12,8 @@ from homeassistant.helpers.update_coordinator import (
 
 from .product_config import get_product_sensors, get_product_name
 
+from homeassistant.components.sensor import SensorEntity
+
 _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(seconds=10)
 
@@ -74,7 +76,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class Ada12Sensor(CoordinatorEntity, Entity):
     ENERGY_SENSORS = ["active_import_energy_total", "active_export_energy_total"]
 
-    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name):
+    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name, device_id):
         super().__init__(coordinator)
         self._product_type = product_type
         self._sensor_key = sensor_key
