@@ -103,11 +103,11 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     @property
     def device_info(self):
         return {
-            "identifiers": {(self._unique_id,)},
+            "identifiers": {(self._device_id,)},  # MINDEN szenzornál ugyanaz!
             "name": "ADA P1 Meter",
             "manufacturer": "ADA",
             "model": self._product_type,
-        }
+        }      
             
     @property
     def state(self):
