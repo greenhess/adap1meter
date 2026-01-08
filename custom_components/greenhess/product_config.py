@@ -3,6 +3,7 @@
 # Product definitions with their supported sensors
 # ignored entries pziot-e02: username, password, wifi_ssid, local_ip, os_version, mac_address, cosem_logical_device_name,
 # ignored entries ada one: username, password, os_version, local_ip, cosem_logical_device_name, client_id, current_tariff, timestamp
+
 PRODUCT_CONFIGS = {
     "ada12": {
         "name": "ADA P1 Meter",
