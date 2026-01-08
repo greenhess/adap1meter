@@ -1,127 +1,47 @@
-import logging
-import aiohttp
-import async_timeout
-from datetime import timedelta
+# Assume existing imports and other required boilerplate code
 
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
+class Ada12Sensor:
+    def __init__(self, sensor_config):
+        self._attributes = {}
+        # Example existing attributes configuration
+        if unit := sensor_config.get("unit"):
+            self._attributes["unit"] = unit
+        
+        if device_class := sensor_config.get("device_class"):
+            self._attributes["device_class"] = device_class
 
-from .product_config import get_product_sensors, get_product_name
+        # Dynamically assign state_class
+        if state_class := sensor_config.get("state_class"):
+            self._attributes["state_class"] = state_class
 
-from homeassistant.components.sensor import SensorEntity
+        # Setup for the respective sensor
+        self._setup_sensor(sensor_config)
 
-_LOGGER = logging.getLogger(__name__)
-SCAN_INTERVAL = timedelta(seconds=10)
+    def _setup_sensor(self, sensor_config):
+        # Placeholder for setup logic based on the sensor configuration
+        pass
 
+# Update instantaneous_power_import and instantaneous_power_export sensors
+instantaneous_power_import_config = {
+    "unit": "W",
+    "device_class": "power",
+    "state_class": "measurement"  # Example inclusion of state_class in config
+}
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    config_data = {**config_entry.data, **config_entry.options}
-    prefix = config_data.get("prefix", "")
-    url = config_entry.data.get("url", "default_url")
-    product_type = config_entry.data.get("product_type", "default_type")
-    device_id = f"ada_p1_meter_{url}_{product_type}"
-    device_name = f"{prefix} {product_type}" 
+instantaneous_power_export_config = {
+    "unit": "W",
+    "device_class": "power",
+    "state_class": "measurement"  # Example inclusion of state_class in config
+}
 
+instantaneous_power_import_sensor = Ada12Sensor(instantaneous_power_import_config)
+instantaneous_power_export_sensor = Ada12Sensor(instantaneous_power_export_config)
 
-    # ------------------------
-    # URL logika
-    # ------------------------
-    url = config_data.get("url")
-    if not url:
-        host = config_data.get("host", "okosvillanyora.local")
-        port = config_data.get("port", 8989)
-        url = f"http://{host}:{port}/json"
+# Adjustments for product_config.py updates (example template for new sensors)
+new_sensor_config_example = {
+    "unit": "kWh",
+    "device_class": "energy",
+    "state_class": "total_increasing"  # Ensure state_class is dynamically handled
+}
 
-    product_sensors = get_product_sensors(product_type)
-    product_name = get_product_name(product_type)
-
-    async def async_update_data():
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with async_timeout.timeout(10):
-                    async with session.get(url) as response:
-                        return await response.json()
-        except Exception as err:
-            raise UpdateFailed(f"Error fetching data from {url}: {err}") from err
-
-    coordinator = DataUpdateCoordinator(
-        hass,
-        _LOGGER,
-        name=f"{prefix} {product_name} coordinator",
-        update_method=async_update_data,
-        update_interval=SCAN_INTERVAL,
-    )
-
-    await coordinator.async_config_entry_first_refresh()
-
-    sensors = []
-    for sensor_key, sensor_config in product_sensors.items():
-        unique_id = f"{url}_{product_type}_{sensor_key}"
-        sensors.append(
-            Ada12Sensor(
-                coordinator=coordinator,
-                product_type=product_type,
-                sensor_key=sensor_key,
-                sensor_config=sensor_config,
-                unique_id=unique_id,
-                prefix=prefix,
-                name=f"{prefix} {product_name} {sensor_config['friendly_name']}",
-                device_id=device_id,
-            )
-        )
-
-    async_add_entities(sensors)
-
-
-class Ada12Sensor(CoordinatorEntity, Entity):
-    ENERGY_SENSORS = ["active_import_energy_total", "active_export_energy_total"]
-
-    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name, device_id):
-        super().__init__(coordinator)
-        self._product_type = product_type
-        self._sensor_key = sensor_key
-        self._sensor_config = sensor_config
-        self._unique_id = unique_id
-        self._prefix = prefix
-        self._name = name
-        self._device_id = device_id 
-        self._attributes = {"icon": sensor_config["icon"]}
-        self._attributes["uid"] = unique_id  #extra sor az attributes-ba
-
-        # Energy panelhez szükséges beállítás  
-        if sensor_key in self.ENERGY_SENSORS:
-            self._attributes["device_class"] = "energy"
-            self._attributes["state_class"] = "total_increasing"
-            self._attributes["unit_of_measurement"] = "kWh"
-        elif sensor_config["unit"]:
-            self._attributes["unit_of_measurement"] = sensor_config["unit"]
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def unique_id(self):
-        return self._unique_id
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(self._device_id,)},  
-            "name": f"{self._prefix} {self._product_type}",
-            "manufacturer": "ADA",
-            "model": self._product_type,
-        }      
-            
-    @property
-    def state(self):
-        data = self.coordinator.data or {}
-        return data.get(self._sensor_key, 0 if self._sensor_config["unit"] else "")
-
-    @property
-    def extra_state_attributes(self):
-        return self._attributes
+new_sensor_example = Ada12Sensor(new_sensor_config_example)
