@@ -127,7 +127,7 @@ Note: If you use same 2 or more devices on your local network (e.g: 2 or more AD
 
 ---
 
-Teszt verzió
+Béta-Teszt verzió
 
 
 ## License
