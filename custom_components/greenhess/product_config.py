@@ -14,19 +14,19 @@ PRODUCT_CONFIGS = {
         "active_import_energy_total": {
             "unit": "kWh",
             "friendly_name": "Összes importált energia",
-            "icon": "mdi:transmission-tower-import"
+            "icon": "mdi:transmission-tower-import",
             "state_class": "total_increasing"
         },
         "active_export_energy_total": {
             "unit": "kWh",
             "friendly_name": "Összes exportált energia",
-            "icon": "mdi:transmission-tower-export"
+            "icon": "mdi:transmission-tower-export",
             "state_class": "total_increasing"
         },
         "total_active_energy": {
             "unit": "kWh",
             "friendly_name": "Összes aktív energia",
-            "icon": "mdi:lightning-bolt"
+            "icon": "mdi:lightning-bolt",
             "state_class": "total_increasing"
         },
 
@@ -404,7 +404,7 @@ PRODUCT_CONFIGS = {
             "instantaneous_power_import": {
                 "unit": "kW",
                 "friendly_name": "Pillanatnyi importált teljesítmény",
-                "icon": "mdi:flash"
+                "icon": "mdi:flash",
                 "state_class": "measurement"
             }
         }
@@ -418,7 +418,7 @@ PRODUCT_CONFIGS = {
             "active_energy_import_total": {
                 "unit": "kWh",
                 "friendly_name": "Összes importált energia",
-                "icon": "mdi:transmission-tower-import"
+                "icon": "mdi:transmission-tower-import",
                 "state_class": "total_increasing"
             },
             "voltage_l1": {
