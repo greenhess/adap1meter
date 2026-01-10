@@ -99,7 +99,7 @@ class Ada12Sensor(CoordinatorEntity, Entity):
             self._attributes["state_class"] = "total_increasing"
             self._attributes["unit_of_measurement"] = "kWh"
         elif state_class == "measurement":
-            self._attributes["device_class"] = "energy"
+            self._attributes["device_class"] = "power"
             self._attributes["state_class"] = "measurement"
             self._attributes["unit_of_measurement"] = sensor_config.get("unit", "")
         elif sensor_config["unit"]:
