@@ -15,7 +15,7 @@ This is a custom integration for [Home Assistant](https://www.home-assistant.io/
 
 |						|**ADA P1 Meter**		|**ADA One**			|**ADA Bridge**			|**ADA PZIOT-E02**		|
 |----------------------:|:---------------------:|:---------------------:|:---------------------:|:---------------------:|
-|						|![](images/0.jpg)		|![](images/1.jpg)		|![](images/3.jpg)		|![](images/4.jpg)		|
+|						|![](images/0.jpg)		|![](images/1.jpg)		|![](images/3b.jpg)		|![](images/4.jpg)		|
 |ESP Model				|ESP32 WROOM			|ESP D1 Mini			|ESP32 WROOM U32		|ESP8266EX				|
 |Hardware/Firmware		|GreenHESS				|GreenHESS				|GreenHESS				|Peacefair/GreenHESS	|
 |Functions				|36 datapoints, MQTT	|24 datapoints, MQTT	|Telegram API			|6 datapoints, MQTT 	|
@@ -24,8 +24,8 @@ This is a custom integration for [Home Assistant](https://www.home-assistant.io/
 |Data collection		|Serial, DSMR, Telegram	|Serial, DSMR, Telegram	|API, DSMR, Telegram	|Modbus					|
 |Home Assistant ready	|✅						|✅						|✅						|✅						|
 |MQTT Connection		|Optional				|okosvillanyora.hu		|Optional				|okosvillanyora.hu		|
-|mDNS					|okosvillanyora.local 	|adaone.local 			|adabridge.local 		|pziot-e02.local 		|
-|Port					|8989					|80						|80						|80						|
+|mDNS					|okosvillanyora.local 	|adaone.local 			|okosvillanyora.local 		|pziot-e02.local 		|
+|Port					|8989					|80						|8989						|80						|
 
 [More information....](https://p1meter.eu/ada-p1-system "More information....")
 
