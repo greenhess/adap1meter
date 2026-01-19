@@ -13,7 +13,7 @@ This is a custom integration for [Home Assistant](https://www.home-assistant.io/
 
 ## Compatible devices
 
-|						|**ADA P1 Meter**		|**ADA One**			|**ADA Bridge**			|**ADA PZIOT-E02**		|
+|						|**ADA P1 Meter**		|**ADA One**			|**ADA P1 Bridge**			|**ADA PZIOT-E02**		|
 |----------------------:|:---------------------:|:---------------------:|:---------------------:|:---------------------:|
 |						|![](images/0b.jpg)		|![](images/1.jpg)		|![](images/3b.jpg)		|![](images/4.jpg)		|
 |ESP Model				|ESP32 WROOM			|ESP D1 Mini			|ESP32 WROOM/U32		|ESP8266EX				|
