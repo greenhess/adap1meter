@@ -12,6 +12,8 @@ from homeassistant.helpers.update_coordinator import (
 
 from .product_config import get_product_sensors, get_product_name
 
+from homeassistant.components.sensor import SensorEntity
+
 _LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL = timedelta(seconds=10)
 
@@ -19,7 +21,11 @@ SCAN_INTERVAL = timedelta(seconds=10)
 async def async_setup_entry(hass, config_entry, async_add_entities):
     config_data = {**config_entry.data, **config_entry.options}
     prefix = config_data.get("prefix", "")
-    product_type = config_data.get("product_type", "ada12")
+    url = config_entry.data.get("url", "default_url")
+    product_type = config_entry.data.get("product_type", "default_type")
+    device_id = f"ada_p1_meter_{url}_{product_type}"
+    device_name = f"{prefix} {product_type}" 
+
 
     # ------------------------
     # URL logika
@@ -64,6 +70,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 unique_id=unique_id,
                 prefix=prefix,
                 name=f"{prefix} {product_name} {sensor_config['friendly_name']}",
+                device_id=device_id,
             )
         )
 
@@ -73,7 +80,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class Ada12Sensor(CoordinatorEntity, Entity):
     ENERGY_SENSORS = ["active_import_energy_total", "active_export_energy_total"]
 
-    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name):
+    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name, device_id):
         super().__init__(coordinator)
         self._product_type = product_type
         self._sensor_key = sensor_key
@@ -81,14 +88,20 @@ class Ada12Sensor(CoordinatorEntity, Entity):
         self._unique_id = unique_id
         self._prefix = prefix
         self._name = name
+        self._device_id = device_id 
         self._attributes = {"icon": sensor_config["icon"]}
         self._attributes["uid"] = unique_id  #extra sor az attributes-ba
 
         # Energy panelhez szükséges beállítás  
-        if sensor_key in self.ENERGY_SENSORS:
+        state_class = sensor_config.get("state_class")
+        if state_class == "total_increasing" or sensor_key in self.ENERGY_SENSORS:
             self._attributes["device_class"] = "energy"
             self._attributes["state_class"] = "total_increasing"
             self._attributes["unit_of_measurement"] = "kWh"
+        elif state_class == "measurement":
+            self._attributes["device_class"] = "power"
+            self._attributes["state_class"] = "measurement"
+            self._attributes["unit_of_measurement"] = sensor_config.get("unit", "")
         elif sensor_config["unit"]:
             self._attributes["unit_of_measurement"] = sensor_config["unit"]
 
@@ -101,6 +114,15 @@ class Ada12Sensor(CoordinatorEntity, Entity):
         return self._unique_id
 
     @property
+    def device_info(self):
+        return {
+            "identifiers": {(self._device_id,)},  
+            "name": f"{self._prefix} {self._product_type}",
+            "manufacturer": "ADA",
+            "model": self._product_type,
+        }      
+            
+    @property
     def state(self):
         data = self.coordinator.data or {}
         return data.get(self._sensor_key, 0 if self._sensor_config["unit"] else "")
@@ -108,3 +130,4 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     @property
     def extra_state_attributes(self):
         return self._attributes
+

@@ -3,6 +3,8 @@
 # Product definitions with their supported sensors
 # ignored entries pziot-e02: username, password, wifi_ssid, local_ip, os_version, mac_address, cosem_logical_device_name,
 # ignored entries ada one: username, password, os_version, local_ip, cosem_logical_device_name, client_id, current_tariff, timestamp
+#mod
+
 PRODUCT_CONFIGS = {
     "ada12": {
         "name": "ADA P1 Meter",
@@ -14,17 +16,20 @@ PRODUCT_CONFIGS = {
         "active_import_energy_total": {
             "unit": "kWh",
             "friendly_name": "Összes importált energia",
-            "icon": "mdi:transmission-tower-import"
+            "icon": "mdi:transmission-tower-import",
+            "state_class": "total_increasing"
         },
         "active_export_energy_total": {
             "unit": "kWh",
             "friendly_name": "Összes exportált energia",
-            "icon": "mdi:transmission-tower-export"
+            "icon": "mdi:transmission-tower-export",
+            "state_class": "total_increasing"
         },
         "total_active_energy": {
             "unit": "kWh",
             "friendly_name": "Összes aktív energia",
-            "icon": "mdi:lightning-bolt"
+            "icon": "mdi:lightning-bolt",
+            "state_class": "total_increasing"
         },
 
         # Tarifa szerinti bontás
@@ -105,12 +110,14 @@ PRODUCT_CONFIGS = {
         "instantaneous_power_import": {
             "unit": "kW",
             "friendly_name": "Pillanatnyi importált teljesítmény",
-            "icon": "mdi:flash"
+            "icon": "mdi:flash",
+            "state_class": "measurement"
         },
         "instantaneous_power_export": {
             "unit": "kW",
             "friendly_name": "Pillanatnyi exportált teljesítmény",
-            "icon": "mdi:flash"
+            "icon": "mdi:flash",
+            "state_class": "measurement"
         },
         "instantaneous_power_import_l1": {
             "unit": "kW",
@@ -275,17 +282,20 @@ PRODUCT_CONFIGS = {
             "active_import_energy_total": {
                 "unit": "kWh",
                 "friendly_name": "Összes importált energia",
-                "icon": "mdi:transmission-tower-import"
+                "icon": "mdi:transmission-tower-import",
+                "state_class": "total_increasing"
             },
             "active_export_energy_total": {
                 "unit": "kWh",
                 "friendly_name": "Összes exportált energia",
-                "icon": "mdi:transmission-tower-export"
+                "icon": "mdi:transmission-tower-export",
+                "state_class": "total_increasing"
             },
             "total_active_energy": {
                 "unit": "kWh",
                 "friendly_name": "Összes aktív energia",
-                "icon": "mdi:transmission-tower-import"
+                "icon": "mdi:transmission-tower-import",
+                "state_class": "total_increasing"
             },
             "power_factor": {
                 "unit": "",
@@ -355,12 +365,14 @@ PRODUCT_CONFIGS = {
             "instantaneous_power_import": {
                 "unit": "kW",
                 "friendly_name": "Pillanatnyi importált teljesítmény",
-                "icon": "mdi:flash"
+                "icon": "mdi:flash",
+                "state_class": "measurement"
             },
             "instantaneous_power_export": {
                 "unit": "kW",
                 "friendly_name": "Pillanatnyi exportált teljesítmény",
-                "icon": "mdi:flash"
+                "icon": "mdi:flash",
+                "state_class": "measurement"
             },
             "meter_serial_number": {
                 "unit": "",
@@ -378,7 +390,8 @@ PRODUCT_CONFIGS = {
             "active_import_energy_total": {
                 "unit": "kWh",
                 "friendly_name": "Összes importált energia",
-                "icon": "mdi:transmission-tower-import"
+                "icon": "mdi:transmission-tower-import",
+                "state_class": "total_increasing"
             },
             "voltage_phase_l1": {
                 "unit": "V",
@@ -393,7 +406,8 @@ PRODUCT_CONFIGS = {
             "instantaneous_power_import": {
                 "unit": "kW",
                 "friendly_name": "Pillanatnyi importált teljesítmény",
-                "icon": "mdi:flash"
+                "icon": "mdi:flash",
+                "state_class": "measurement"
             }
         }
     },
@@ -406,7 +420,8 @@ PRODUCT_CONFIGS = {
             "active_energy_import_total": {
                 "unit": "kWh",
                 "friendly_name": "Összes importált energia",
-                "icon": "mdi:transmission-tower-import"
+                "icon": "mdi:transmission-tower-import",
+                "state_class": "total_increasing"
             },
             "voltage_l1": {
                 "unit": "V",
