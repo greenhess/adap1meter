@@ -5,7 +5,7 @@
 # ignored entries ada one: username, password, os_version, local_ip, cosem_logical_device_name, client_id, current_tariff, timestamp
 PRODUCT_CONFIGS = {
     "ada12": {
-        "name": "ADA P1 Meter",
+        "name": "ADA P1 Meter / ADA P1 Bridge",
         "description": "Full-featured smart meter with all sensors",
         "host": "okosvillanyora.local",
         "default_port": 8989,
@@ -368,35 +368,7 @@ PRODUCT_CONFIGS = {
                 "icon": "mdi:identifier"
             }
         }
-    },
-    "adabridge": {
-        "name": "ADA Bridge",
-        "description": "Compact meter with minimal sensors",
-        "host": "adabridge.local",
-        "default_port": 80,
-        "sensors": {
-            "active_import_energy_total": {
-                "unit": "kWh",
-                "friendly_name": "Összes importált energia",
-                "icon": "mdi:transmission-tower-import"
-            },
-            "voltage_phase_l1": {
-                "unit": "V",
-                "friendly_name": "Fázis 1 (L1) feszültség",
-                "icon": "mdi:flash"
-            },
-            "current_phase_l1": {
-                "unit": "A",
-                "friendly_name": "Fázis 1 (L1) áramerősség",
-                "icon": "mdi:current-ac"
-            },
-            "instantaneous_power_import": {
-                "unit": "kW",
-                "friendly_name": "Pillanatnyi importált teljesítmény",
-                "icon": "mdi:flash"
-            }
-        }
-    },
+        },
     "adapziote02": {
         "name": "ADA PZIOT-E02",
         "description": "Compact meter with minimal sensors",
