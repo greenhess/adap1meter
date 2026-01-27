@@ -52,8 +52,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     await coordinator.async_config_entry_first_refresh()
 
+
+
     sensors = []
     for sensor_key, sensor_config in product_sensors.items():
+        lang = hass.config.language
+        raw_name = sensor_config.get(lang) or sensor_config.get("en") or sensor_key.replace("_", " ").capitalize()
         unique_id = f"{url}_{product_type}_{sensor_key}"
         sensors.append(
             Ada12Sensor(
@@ -63,7 +67,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 sensor_config=sensor_config,
                 unique_id=unique_id,
                 prefix=prefix,
-                name=f"{prefix} {product_name} {sensor_config['friendly_name']}",
+                name=f"{prefix} {raw_name}", 
             )
         )
 
@@ -84,8 +88,16 @@ class Ada12Sensor(CoordinatorEntity, Entity):
         self._attributes = {"icon": sensor_config["icon"]}
         self._attributes["uid"] = unique_id  #extra sor az attributes-ba
 
-        # Energy panelhez szükséges beállítás  
-        if sensor_key in self.ENERGY_SENSORS:
+        # Energy panelhez szükséges beállítás 
+        if "GAS_total" in sensor_key:
+            self._attributes["device_class"] = "gas"
+            self._attributes["state_class"] = "total_increasing"
+            self._attributes["unit_of_measurement"] = "m³"
+        elif "WATER_total" in sensor_key:
+            self._attributes["device_class"] = "water"
+            self._attributes["state_class"] = "total_increasing"
+            self._attributes["unit_of_measurement"] = "m³"
+        elif sensor_key in self.ENERGY_SENSORS:
             self._attributes["device_class"] = "energy"
             self._attributes["state_class"] = "total_increasing"
             self._attributes["unit_of_measurement"] = "kWh"
@@ -103,7 +115,18 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     @property
     def state(self):
         data = self.coordinator.data or {}
-        return data.get(self._sensor_key, 0 if self._sensor_config["unit"] else "")
+
+        # --- PLUGIN KEZELÉS ---
+        if self._sensor_key.startswith("plugin_"):
+            # pl. plugin_GAS_total_01 -> GAS_total_01
+            real_key = self._sensor_key.replace("plugin_", "")
+            plugins = data.get("plugins", {})
+            # Belépünk a plugins -> GAS_total_01 -> value szintig
+            return plugins.get(real_key, {}).get("value")
+        
+        # Sima kulcsok (fő szint)
+        return data.get(self._sensor_key, 0 if self._sensor_config.get("unit") else "")
+        #return data.get(self._sensor_key, 0 if self._sensor_config["unit"] else "")
 
     @property
     def extra_state_attributes(self):
