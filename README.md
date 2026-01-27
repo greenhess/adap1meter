@@ -113,6 +113,7 @@ PRODUCT_CONFIGS = {
 ## Troubleshooting
 
 If you encounter any issues, please check the Home Assistant logs under **Settings** > **Logs**. For more help, create an issue in this repository.
+To change languge to hungarian set system lang to HU.
 
 ---
 
