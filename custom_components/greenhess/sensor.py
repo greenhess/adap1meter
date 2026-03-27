@@ -1,7 +1,10 @@
 import logging
+import re
 import aiohttp
 import async_timeout
-from datetime import timedelta
+rom datetime import datetime, timedelta
+
+from homeassistant.util import dt as dt_util
 
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import (
@@ -88,6 +91,18 @@ class Ada12Sensor(CoordinatorEntity, Entity):
         self._attributes = {"icon": sensor_config["icon"]}
         self._attributes["uid"] = unique_id  #extra sor az attributes-ba
 
+        # Power factor is unitless but numeric; mark as measurement so HA graphs it as a curve.
+        if sensor_key in ("power_factor", "power_factor_l1", "power_factor_l2", "power_factor_l3"):
+            self._attributes["state_class"] = "measurement"
+
+        # Serial number is informational; mark as diagnostic to avoid chart clutter.
+        if sensor_key == "meter_serial_number":
+            self._attributes["entity_category"] = "diagnostic"
+
+        # Timestamp: expose as HA timestamp device_class (state conversion happens in state()).
+        if sensor_key == "timestamp":
+            self._attributes["device_class"] = "timestamp"
+
         # Energy panelhez szükséges beállítás 
         if "GAS_total" in sensor_key:
             self._attributes["device_class"] = "gas"
@@ -103,6 +118,24 @@ class Ada12Sensor(CoordinatorEntity, Entity):
             self._attributes["unit_of_measurement"] = "kWh"
         elif sensor_config["unit"]:
             self._attributes["unit_of_measurement"] = sensor_config["unit"]
+
+    def _parse_device_timestamp_local(self, value: str) -> str | None:
+        """Parse device timestamp like 'YYMMDDHHmmssW' as local time and return ISO string."""
+        if not isinstance(value, str):
+            return None
+
+        # Extract YYMMDDHHmmss, ignore trailing suffix like 'W'
+        m = re.match(r"^(\d{12})", value)
+        if not m:
+            return None
+
+        try:
+            naive_local = datetime.strptime(m.group(1), "%y%m%d%H%M%S")
+        except ValueError:
+            return None
+
+        aware_local = naive_local.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
+        return aware_local.isoformat()
 
     @property
     def name(self):
@@ -125,8 +158,18 @@ class Ada12Sensor(CoordinatorEntity, Entity):
             return plugins.get(real_key, {}).get("value")
         
         # Sima kulcsok (fő szint)
-        return data.get(self._sensor_key, 0 if self._sensor_config.get("unit") else "")
-        #return data.get(self._sensor_key, 0 if self._sensor_config["unit"] else "")
+        raw = data.get(self._sensor_key, 0 if self._sensor_config.get("unit") else "")
+
+        if self._sensor_key == "timestamp":
+            parsed = self._parse_device_timestamp_local(raw)
+            if parsed is not None:
+                return parsed
+
+            # If parsing fails, keep raw and mark diagnostic to reduce chart noise.
+            self._attributes["entity_category"] = "diagnostic"
+            return raw
+
+        return raw
 
     @property
     def extra_state_attributes(self):
