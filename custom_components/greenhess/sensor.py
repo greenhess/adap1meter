@@ -3,13 +3,14 @@ import aiohttp
 import async_timeout
 from datetime import timedelta
 
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import DeviceInfo, Entity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
 )
 
+from . import DOMAIN
 from .product_config import get_product_sensors, get_product_name
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,7 +68,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 sensor_config=sensor_config,
                 unique_id=unique_id,
                 prefix=prefix,
-                name=f"{prefix} {raw_name}", 
+                name=f"{prefix} {raw_name}",
+                url=url,
+                product_name=product_name,
             )
         )
 
@@ -77,7 +80,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class Ada12Sensor(CoordinatorEntity, Entity):
     ENERGY_SENSORS = ["active_import_energy_total", "active_export_energy_total"]
 
-    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name):
+    def __init__(self, coordinator, product_type, sensor_key, sensor_config, unique_id, prefix, name, url, product_name):
         super().__init__(coordinator)
         self._product_type = product_type
         self._sensor_key = sensor_key
@@ -85,6 +88,8 @@ class Ada12Sensor(CoordinatorEntity, Entity):
         self._unique_id = unique_id
         self._prefix = prefix
         self._name = name
+        self._url = url
+        self._product_name = product_name
         self._attributes = {"icon": sensor_config["icon"]}
         self._attributes["uid"] = unique_id  #extra sor az attributes-ba
 
@@ -111,6 +116,15 @@ class Ada12Sensor(CoordinatorEntity, Entity):
     @property
     def unique_id(self):
         return self._unique_id
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._url)},
+            name=self._prefix or self._product_name,
+            manufacturer="GreenHESS",
+            model=self._product_name,
+        )
 
     @property
     def state(self):
